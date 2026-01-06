@@ -4,11 +4,21 @@ from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+from google import genai
+from google.genai import types
+import base64
+from PIL import Image
+from io import BytesIO
 
 ROOT_DIR = Path(__file__).parent.parent
 load_dotenv(ROOT_DIR / '.env')
 
 router = APIRouter()
+
+# Configure Gemini API
+gemini_api_key = os.environ.get('GEMINI_API_KEY')
+if gemini_api_key:
+    client = genai.Client(api_key=gemini_api_key)
 
 class ImageAnalysisRequest(BaseModel):
     image_base64: str
@@ -21,26 +31,52 @@ class ChatRequest(BaseModel):
 @router.post("/analyze-image")
 async def analyze_image(request: ImageAnalysisRequest, current_user: dict = Depends(get_current_user)):
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
-        
-        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        api_key = os.environ.get('GEMINI_API_KEY')
         if not api_key:
             raise HTTPException(status_code=500, detail="AI service not configured")
         
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"image_analysis_{current_user['sub']}",
-            system_message="You are an educational AI assistant that provides constructive feedback on student work."
-        ).with_model("gemini", "gemini-3-flash-preview")
+        # Initialize Gemini client
+        client = genai.Client(api_key=api_key)
         
-        image_content = ImageContent(image_base64=request.image_base64)
-        user_message = UserMessage(
-            text=request.prompt,
-            file_contents=[image_content]
+        # Decode base64 image
+        image_data = request.image_base64
+        if ',' in image_data:
+            image_data = image_data.split(',')[1]
+        
+        image_bytes = base64.b64decode(image_data)
+        image = Image.open(BytesIO(image_bytes))
+        
+        # Save to temporary bytes for upload
+        img_byte_arr = BytesIO()
+        image.save(img_byte_arr, format='PNG')
+        img_byte_arr.seek(0)
+        
+        # Create prompt with educational context
+        full_prompt = f"""You are an educational AI assistant that provides constructive feedback on student work.
+
+{request.prompt}
+
+Provide detailed, encouraging feedback that:
+- Highlights what was done well
+- Identifies areas for improvement
+- Offers specific suggestions
+- Maintains a supportive tone"""
+        
+        # Generate response with image
+        response = client.models.generate_content(
+            model='gemini-2.0-flash-exp',
+            contents=[
+                types.Content(
+                    role="user",
+                    parts=[
+                        types.Part.from_text(text=full_prompt),
+                        types.Part.from_bytes(data=img_byte_arr.read(), mime_type="image/png")
+                    ]
+                )
+            ]
         )
         
-        response = await chat.send_message(user_message)
-        return {"feedback": response}
+        return {"feedback": response.text}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI analysis failed: {str(e)}")
@@ -51,22 +87,28 @@ async def doubt_solver(request: ChatRequest, current_user: dict = Depends(get_cu
         raise HTTPException(status_code=403, detail="Not authorized")
     
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        
-        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        api_key = os.environ.get('GEMINI_API_KEY')
         if not api_key:
             raise HTTPException(status_code=500, detail="AI service not configured")
         
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"doubt_solver_{current_user['sub']}",
-            system_message="You are a helpful educational AI assistant. Answer student questions clearly and concisely. Encourage learning by explaining concepts rather than just giving answers."
-        ).with_model("gemini", "gemini-3-flash-preview")
+        # Initialize Gemini client
+        client = genai.Client(api_key=api_key)
         
-        user_message = UserMessage(text=request.question)
-        response = await chat.send_message(user_message)
+        # System instruction
+        system_instruction = "You are a helpful educational AI assistant. Answer student questions clearly and concisely. Encourage learning by explaining concepts rather than just giving answers. Be supportive and patient."
         
-        return {"answer": response}
+        # Generate response
+        response = client.models.generate_content(
+            model='gemini-2.0-flash-exp',
+            contents=[
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text=f"{system_instruction}\n\nStudent Question: {request.question}")]
+                )
+            ]
+        )
+        
+        return {"answer": response.text}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI chat failed: {str(e)}")
