@@ -16,17 +16,17 @@ export const getStudents = () => axios.get(`${API}/users/students`);
 export const createStudent = (data) => axios.post(`${API}/users/students`, data);
 
 // Tasks
-export const getTasks = () => axios.get(`${API}/tasks`);
+export const getTasks = () => axios.get(`${API}/tasks/`);
 export const getTodayTasks = () => axios.get(`${API}/tasks/today`);
 export const getTask = (id) => axios.get(`${API}/tasks/${id}`);
-export const createTask = (data) => axios.post(`${API}/tasks`, data);
+export const createTask = (data) => axios.post(`${API}/tasks/`, data);
 export const updateTask = (id, data) => axios.put(`${API}/tasks/${id}`, data);
 export const deleteTask = (id) => axios.delete(`${API}/tasks/${id}`);
 
 // Submissions
-export const getSubmissions = () => axios.get(`${API}/submissions`);
+export const getSubmissions = () => axios.get(`${API}/submissions/`);
 export const getTaskSubmissions = (taskId) => axios.get(`${API}/submissions/task/${taskId}`);
-export const createSubmission = (data) => axios.post(`${API}/submissions`, data);
+export const createSubmission = (data) => axios.post(`${API}/submissions/`, data);
 export const updateSubmission = (id, data) => axios.put(`${API}/submissions/${id}`, data);
 export const likeSubmission = (id) => axios.post(`${API}/submissions/${id}/like`);
 
@@ -44,8 +44,8 @@ export const getLeaderboard = () => axios.get(`${API}/progress/leaderboard`);
 export const getStudentProgress = (studentId) => axios.get(`${API}/progress/student/${studentId}`);
 
 // Announcements
-export const getAnnouncements = () => axios.get(`${API}/announcements`);
-export const createAnnouncement = (data) => axios.post(`${API}/announcements`, data);
+export const getAnnouncements = () => axios.get(`${API}/announcements/`);
+export const createAnnouncement = (data) => axios.post(`${API}/announcements/`, data);
 export const deleteAnnouncement = (id) => axios.delete(`${API}/announcements/${id}`);
 
 // AI

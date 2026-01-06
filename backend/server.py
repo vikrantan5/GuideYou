@@ -24,7 +24,7 @@ sio = socketio.AsyncServer(
 )
 
 # Create FastAPI app
-app = FastAPI()
+app = FastAPI(redirect_slashes=False)
 api_router = APIRouter(prefix="/api")
 
 # Import routes
@@ -62,8 +62,16 @@ app.add_middleware(
 from sockets.chat_socket import register_socket_events
 register_socket_events(sio, db)
 
+# Add shutdown event before wrapping
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    client.close()
+
 # Wrap app with Socket.IO
 socket_app = socketio.ASGIApp(sio, app)
+
+# Make app point to socket_app for uvicorn to serve Socket.IO
+app = socket_app
 
 # Configure logging
 logging.basicConfig(
@@ -71,10 +79,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
 
 @api_router.get("/")
 async def root():
