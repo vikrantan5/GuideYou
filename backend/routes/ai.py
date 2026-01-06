@@ -15,11 +15,6 @@ load_dotenv(ROOT_DIR / '.env')
 
 router = APIRouter()
 
-# Configure Gemini API with Emergent LLM Key
-emergent_llm_key = os.environ.get('EMERGENT_LLM_KEY')
-if emergent_llm_key:
-    client = genai.Client(api_key=emergent_llm_key)
-
 class ImageAnalysisRequest(BaseModel):
     image_base64: str
     prompt: str = "Analyze this student's work and provide constructive feedback. Focus on quality, clarity, and effort."
@@ -31,7 +26,7 @@ class ChatRequest(BaseModel):
 @router.post("/analyze-image")
 async def analyze_image(request: ImageAnalysisRequest, current_user: dict = Depends(get_current_user)):
     try:
-        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        api_key = os.environ.get('GEMINI_API_KEY')
         if not api_key:
             raise HTTPException(status_code=500, detail="AI service not configured")
         
@@ -64,7 +59,7 @@ Provide detailed, encouraging feedback that:
         
         # Generate response with image
         response = client.models.generate_content(
-            model='gemini-2.0-flash-exp',
+            model='gemini-2.5-flash',
             contents=[
                 types.Content(
                     role="user",
@@ -87,7 +82,7 @@ async def doubt_solver(request: ChatRequest, current_user: dict = Depends(get_cu
         raise HTTPException(status_code=403, detail="Not authorized")
     
     try:
-        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        api_key = os.environ.get('GEMINI_API_KEY')
         if not api_key:
             raise HTTPException(status_code=500, detail="AI service not configured")
         
@@ -99,7 +94,7 @@ async def doubt_solver(request: ChatRequest, current_user: dict = Depends(get_cu
         
         # Generate response
         response = client.models.generate_content(
-            model='gemini-2.0-flash-exp',
+            model='gemini-2.5-flash',
             contents=[
                 types.Content(
                     role="user",

@@ -39,7 +39,7 @@ async def create_task(task: TaskCreate, current_user: dict = Depends(get_current
     
     return task_obj
 
-@router.get("/", response_model=List[Task])
+@router.get("/")
 async def get_tasks(current_user: dict = Depends(get_current_user)):
     if current_user["role"] == "admin":
         tasks = await db.tasks.find({}, {"_id": 0}).to_list(1000)
@@ -54,10 +54,23 @@ async def get_tasks(current_user: dict = Depends(get_current_user)):
             task['created_at'] = datetime.fromisoformat(task['created_at'])
         if isinstance(task['deadline'], str):
             task['deadline'] = datetime.fromisoformat(task['deadline'])
+        
+        # Attach submission data for students
+        if current_user["role"] == "student":
+            submission = await db.submissions.find_one(
+                {"task_id": task['id'], "student_id": current_user["sub"]},
+                {"_id": 0}
+            )
+            if submission:
+                if isinstance(submission.get('submitted_at'), str):
+                    submission['submitted_at'] = datetime.fromisoformat(submission['submitted_at'])
+                task['submission'] = submission
+            else:
+                task['submission'] = None
     
-    return [Task(**task) for task in tasks]
+    return tasks
 
-@router.get("/today", response_model=List[Task])
+@router.get("/today")
 async def get_today_tasks(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "student":
         raise HTTPException(status_code=403, detail="Not authorized")
@@ -79,8 +92,20 @@ async def get_today_tasks(current_user: dict = Depends(get_current_user)):
             task['created_at'] = datetime.fromisoformat(task['created_at'])
         if isinstance(task['deadline'], str):
             task['deadline'] = datetime.fromisoformat(task['deadline'])
+        
+        # Attach submission data
+        submission = await db.submissions.find_one(
+            {"task_id": task['id'], "student_id": current_user["sub"]},
+            {"_id": 0}
+        )
+        if submission:
+            if isinstance(submission.get('submitted_at'), str):
+                submission['submitted_at'] = datetime.fromisoformat(submission['submitted_at'])
+            task['submission'] = submission
+        else:
+            task['submission'] = None
     
-    return [Task(**task) for task in tasks]
+    return tasks
 
 @router.get("/{task_id}", response_model=Task)
 async def get_task(task_id: str, current_user: dict = Depends(get_current_user)):
