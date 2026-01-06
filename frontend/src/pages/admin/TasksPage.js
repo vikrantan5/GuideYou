@@ -8,6 +8,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
+import { Checkbox } from '../../components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../components/ui/alert-dialog';
 import { PlusCircle, Trash2, Edit, Calendar } from 'lucide-react';
 import * as api from '../../utils/api';
@@ -191,6 +192,45 @@ export const TasksPage = () => {
                   required
                   data-testid="task-deadline-input"
                 />
+              </div>
+              <div>
+                <Label htmlFor="assigned_to">Assign to Students</Label>
+                <div className="border rounded-md p-3 max-h-40 overflow-y-auto space-y-2">
+                  {students.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No students available. Add students first.</p>
+                  ) : (
+                    students.map((student) => (
+                      <div key={student.id} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={`student-${student.id}`}
+                          checked={formData.assigned_to.includes(student.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormData({
+                                ...formData,
+                                assigned_to: [...formData.assigned_to, student.id]
+                              });
+                            } else {
+                              setFormData({
+                                ...formData,
+                                assigned_to: formData.assigned_to.filter(id => id !== student.id)
+                              });
+                            }
+                          }}
+                          className="w-4 h-4"
+                          data-testid={`assign-student-${student.id}`}
+                        />
+                        <label htmlFor={`student-${student.id}`} className="text-sm cursor-pointer">
+                          {student.name} ({student.email})
+                        </label>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Select students who should receive this task
+                </p>
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
