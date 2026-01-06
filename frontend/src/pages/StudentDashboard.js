@@ -8,6 +8,9 @@ import { Progress } from '../components/ui/progress';
 import { LayoutDashboard, ListTodo, Trophy, MessageSquare, Brain, LogOut, Flame, Award } from 'lucide-react';
 import * as api from '../utils/api';
 import { toast } from 'sonner';
+import { MyTasksPage } from './student/MyTasksPage';
+import { ProgressPage } from './student/ProgressPage';
+import { AIHelperPage } from './student/AIHelperPage';
 
 export const StudentDashboard = () => {
   const { user, logout } = useAuth();
@@ -159,6 +162,9 @@ export const StudentDashboard = () => {
                   )}
                 </div>
               } />
+              <Route path="/tasks" element={<MyTasksPage />} />
+              <Route path="/progress" element={<ProgressPage />} />
+              <Route path="/ai-helper" element={<AIHelperPage />} />
             </Routes>
           </main>
         </div>

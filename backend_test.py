@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import uuid
 
 class StudentTaskManagementTester:
-    def __init__(self, base_url="https://taskflow-2722.preview.emergentagent.com"):
+    def __init__(self, base_url="https://studyflow-267.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.admin_token = None

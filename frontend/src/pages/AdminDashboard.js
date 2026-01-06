@@ -7,6 +7,11 @@ import { Badge } from '../components/ui/badge';
 import { LayoutDashboard, Users, ListTodo, CheckSquare, MessageSquare, TrendingUp, Megaphone, LogOut } from 'lucide-react';
 import * as api from '../utils/api';
 import { toast } from 'sonner';
+import { StudentsPage } from './admin/StudentsPage';
+import { TasksPage } from './admin/TasksPage';
+import { SubmissionsPage } from './admin/SubmissionsPage';
+import { LeaderboardPage } from './admin/LeaderboardPage';
+import { AnnouncementsPage } from './admin/AnnouncementsPage';
 
 export const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -111,6 +116,11 @@ export const AdminDashboard = () => {
                   </Card>
                 </div>
               } />
+              <Route path="/students" element={<StudentsPage />} />
+              <Route path="/tasks" element={<TasksPage />} />
+              <Route path="/submissions" element={<SubmissionsPage />} />
+              <Route path="/leaderboard" element={<LeaderboardPage />} />
+              <Route path="/announcements" element={<AnnouncementsPage />} />
             </Routes>
           </main>
         </div>
