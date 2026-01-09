@@ -118,8 +118,8 @@ export const MyTasksPage = () => {
     return new Date(deadline) < new Date();
   };
 
-  const pendingTasks = tasks.filter(t => !t.submission || t.submission?.status === 'pending');
-  const completedTasks = tasks.filter(t => t.submission?.status === 'approved');
+  const pendingTasks = tasks.filter(t => !t.submission);
+  const completedTasks = tasks.filter(t => t.submission);
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
@@ -191,23 +191,25 @@ export const MyTasksPage = () => {
             </Card>
           ) : (
             completedTasks.map((task) => (
-              <Card key={task.id} className="border-green-500" data-testid={`completed-task-card-${task.id}`}>
+              <Card key={task.id} className={task.submission?.status === 'approved' ? 'border-green-500' : 'border-blue-500'} data-testid={`completed-task-card-${task.id}`}>
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <CardTitle className="flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
+                        <CheckCircle className={`w-5 h-5 ${task.submission?.status === 'approved' ? 'text-green-500' : 'text-blue-500'}`} />
                         {task.title}
                       </CardTitle>
                       <CardDescription className="mt-2">{task.description}</CardDescription>
                     </div>
-                    <Badge variant="success">Approved</Badge>
+                    <Badge variant={task.submission?.status === 'approved' ? 'success' : task.submission?.status === 'rejected' ? 'destructive' : 'default'}>
+                      {task.submission?.status === 'approved' ? 'Approved' : task.submission?.status === 'rejected' ? 'Rejected' : 'Under Review'}
+                    </Badge>
                   </div>
                 </CardHeader>
                 {task.submission?.feedback && (
                   <CardContent>
                     <div className="bg-muted p-4 rounded">
-                      <p className="text-sm font-semibold mb-2">Feedback:</p>
+                      <p className="text-sm font-semibold mb-2">Admin Feedback:</p>
                       <p className="text-sm text-muted-foreground">{task.submission.feedback}</p>
                     </div>
                   </CardContent>

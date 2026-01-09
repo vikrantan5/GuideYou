@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { MyTasksPage } from './student/MyTasksPage';
 import { ProgressPage } from './student/ProgressPage';
 import { AIHelperPage } from './student/AIHelperPage';
+import { ChatPage } from './student/ChatPage';
 
 export const StudentDashboard = () => {
   const { user, logout } = useAuth();
@@ -18,6 +19,7 @@ export const StudentDashboard = () => {
   const [progress, setProgress] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [todayTasks, setTodayTasks] = useState([]);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
     loadData();
@@ -39,10 +41,15 @@ export const StudentDashboard = () => {
     }
   };
 
-  const NavItem = ({ to, icon: Icon, label }) => (
-    <Link to={to} className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/10 transition-colors">
+  const NavItem = ({ to, icon: Icon, label, badge }) => (
+    <Link to={to} className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/10 transition-colors relative">
       <Icon className="w-5 h-5" />
       <span>{label}</span>
+      {badge > 0 && (
+        <Badge variant="destructive" className="rounded-full h-5 w-5 p-0 flex items-center justify-center text-xs absolute -top-1 left-8">
+          {badge}
+        </Badge>
+      )}
     </Link>
   );
 
@@ -73,6 +80,7 @@ export const StudentDashboard = () => {
             <NavItem to="/dashboard" icon={LayoutDashboard} label="Overview" />
             <NavItem to="/dashboard/tasks" icon={ListTodo} label="My Tasks" />
             <NavItem to="/dashboard/progress" icon={Trophy} label="Progress" />
+            <NavItem to="/dashboard/chat" icon={MessageSquare} label="Chat with Admin" badge={unreadMessages} />
             <NavItem to="/dashboard/ai-helper" icon={Brain} label="AI Helper" />
           </aside>
 
@@ -164,6 +172,7 @@ export const StudentDashboard = () => {
               } />
               <Route path="/tasks" element={<MyTasksPage />} />
               <Route path="/progress" element={<ProgressPage />} />
+              <Route path="/chat" element={<ChatPage />} />
               <Route path="/ai-helper" element={<AIHelperPage />} />
             </Routes>
           </main>

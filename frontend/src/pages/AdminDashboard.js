@@ -12,6 +12,7 @@ import { TasksPage } from './admin/TasksPage';
 import { SubmissionsPage } from './admin/SubmissionsPage';
 import { LeaderboardPage } from './admin/LeaderboardPage';
 import { AnnouncementsPage } from './admin/AnnouncementsPage';
+import { AdminChatsPage } from './admin/AdminChatsPage';
 
 export const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -70,6 +71,7 @@ export const AdminDashboard = () => {
             <NavItem to="/admin/students" icon={Users} label="Students" />
             <NavItem to="/admin/tasks" icon={ListTodo} label="Tasks" />
             <NavItem to="/admin/submissions" icon={CheckSquare} label="Submissions" />
+            <NavItem to="/admin/chats" icon={MessageSquare} label="Student Chats" />
             <NavItem to="/admin/leaderboard" icon={TrendingUp} label="Leaderboard" />
             <NavItem to="/admin/announcements" icon={Megaphone} label="Announcements" />
           </aside>
@@ -119,6 +121,7 @@ export const AdminDashboard = () => {
               <Route path="/students" element={<StudentsPage />} />
               <Route path="/tasks" element={<TasksPage />} />
               <Route path="/submissions" element={<SubmissionsPage />} />
+              <Route path="/chats" element={<AdminChatsPage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/announcements" element={<AnnouncementsPage />} />
             </Routes>
