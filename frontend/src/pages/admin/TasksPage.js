@@ -107,16 +107,16 @@ export const TasksPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold" data-testid="tasks-page-title">Tasks Management</h2>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h2 className="text-2xl sm:text-3xl font-bold" data-testid="tasks-page-title">Tasks Management</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button data-testid="create-task-dialog-trigger">
+            <Button data-testid="create-task-dialog-trigger" className="w-full sm:w-auto">
               <PlusCircle className="w-4 h-4 mr-2" />
               Create Task
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl" data-testid="create-task-dialog">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto" data-testid="create-task-dialog">
             <DialogHeader>
               <DialogTitle>Create New Task</DialogTitle>
             </DialogHeader>
@@ -146,7 +146,7 @@ export const TasksPage = () => {
                   data-testid="task-description-input"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="difficulty">Difficulty</Label>
                   <Select
@@ -232,9 +232,9 @@ export const TasksPage = () => {
                   Select students who should receive this task
                 </p>
               </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                <Button type="submit" data-testid="submit-create-task-button">Create Task</Button>
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto">Cancel</Button>
+                <Button type="submit" data-testid="submit-create-task-button" className="w-full sm:w-auto">Create Task</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -243,63 +243,108 @@ export const TasksPage = () => {
 
       <Card data-testid="tasks-list-card">
         <CardHeader>
-          <CardTitle>All Tasks ({tasks.length})</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">All Tasks ({tasks.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {tasks.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No tasks yet. Create your first task!</p>
+            <p className="text-center text-muted-foreground py-8 text-sm sm:text-base">No tasks yet. Create your first task!</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Difficulty</TableHead>
-                  <TableHead>Deadline</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Difficulty</TableHead>
+                      <TableHead>Deadline</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {tasks.map((task) => (
+                      <TableRow key={task.id} data-testid={`task-row-${task.id}`}>
+                        <TableCell className="font-medium">{task.title}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{task.submission_type}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getDifficultyColor(task.difficulty)}>{task.difficulty}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4" />
+                            {new Date(task.deadline).toLocaleDateString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" data-testid={`delete-task-${task.id}`}>
+                                <Trash2 className="w-4 h-4 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Task</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this task? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(task.id)}>Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4">
                 {tasks.map((task) => (
-                  <TableRow key={task.id} data-testid={`task-row-${task.id}`}>
-                    <TableCell className="font-medium">{task.title}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{task.submission_type}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getDifficultyColor(task.difficulty)}>{task.difficulty}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
+                  <Card key={task.id} data-testid={`task-card-${task.id}`} className="border-l-4 border-l-primary">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-semibold text-base flex-1">{task.title}</h3>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" data-testid={`delete-task-mobile-${task.id}`}>
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="max-w-sm mx-4">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Task</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this task? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter className="flex-col gap-2">
+                              <AlertDialogCancel className="w-full">Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(task.id)} className="w-full">Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant="outline" className="text-xs">{task.submission_type}</Badge>
+                        <Badge variant={getDifficultyColor(task.difficulty)} className="text-xs">{task.difficulty}</Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t">
                         <Calendar className="w-4 h-4" />
                         {new Date(task.deadline).toLocaleDateString()}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm" data-testid={`delete-task-${task.id}`}>
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Task</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this task? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(task.id)}>Delete</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </TableCell>
-                  </TableRow>
+                    </CardContent>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

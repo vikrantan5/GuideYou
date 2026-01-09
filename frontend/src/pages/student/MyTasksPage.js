@@ -14,11 +14,9 @@ const getErrorMessage = (error) => {
   try {
     if (!error) return 'An error occurred';
     
-    // Check for response data
     if (error.response?.data) {
       const data = error.response.data;
       
-      // Handle FastAPI validation errors (array)
       if (Array.isArray(data.detail)) {
         return data.detail
           .map(err => {
@@ -29,18 +27,15 @@ const getErrorMessage = (error) => {
           .join('; ');
       }
       
-      // Handle simple string error
       if (typeof data.detail === 'string') {
         return data.detail;
       }
       
-      // Handle message field
       if (typeof data.message === 'string') {
         return data.message;
       }
     }
     
-    // Fallback to error message
     if (typeof error.message === 'string') {
       return error.message;
     }
@@ -127,14 +122,14 @@ export const MyTasksPage = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold" data-testid="my-tasks-page-title">My Tasks</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold" data-testid="my-tasks-page-title">My Tasks</h2>
 
       <Tabs defaultValue="pending" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="pending" data-testid="pending-tasks-tab">
+          <TabsTrigger value="pending" data-testid="pending-tasks-tab" className="text-sm sm:text-base">
             Pending ({pendingTasks.length})
           </TabsTrigger>
-          <TabsTrigger value="completed" data-testid="completed-tasks-tab">
+          <TabsTrigger value="completed" data-testid="completed-tasks-tab" className="text-sm sm:text-base">
             Completed ({completedTasks.length})
           </TabsTrigger>
         </TabsList>
@@ -143,35 +138,35 @@ export const MyTasksPage = () => {
           {pendingTasks.length === 0 ? (
             <Card>
               <CardContent className="py-12">
-                <p className="text-center text-muted-foreground">No pending tasks. You're all caught up!</p>
+                <p className="text-center text-muted-foreground text-sm sm:text-base">No pending tasks. You're all caught up!</p>
               </CardContent>
             </Card>
           ) : (
             pendingTasks.map((task) => (
               <Card key={task.id} className={isOverdue(task.deadline) ? 'border-red-500' : ''} data-testid={`task-card-${task.id}`}>
                 <CardHeader>
-                  <div className="flex justify-between items-start">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                     <div className="flex-1">
-                      <CardTitle>{task.title}</CardTitle>
-                      <CardDescription className="mt-2">{task.description}</CardDescription>
+                      <CardTitle className="text-base sm:text-lg">{task.title}</CardTitle>
+                      <CardDescription className="mt-2 text-sm">{task.description}</CardDescription>
                     </div>
-                    <div className="flex gap-2">
-                      <Badge variant={getDifficultyColor(task.difficulty)}>{task.difficulty}</Badge>
-                      {isOverdue(task.deadline) && <Badge variant="destructive">Overdue</Badge>}
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant={getDifficultyColor(task.difficulty)} className="text-xs">{task.difficulty}</Badge>
+                      {isOverdue(task.deadline) && <Badge variant="destructive" className="text-xs">Overdue</Badge>}
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                     <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         <strong>Type:</strong> {task.submission_type}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         <strong>Deadline:</strong> {new Date(task.deadline).toLocaleString()}
                       </p>
                     </div>
-                    <Button onClick={() => handleCompleteTask(task)} data-testid={`submit-task-button-${task.id}`}>
+                    <Button onClick={() => handleCompleteTask(task)} data-testid={`submit-task-button-${task.id}`} className="w-full sm:w-auto">
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Mark as Complete
                     </Button>
@@ -186,31 +181,31 @@ export const MyTasksPage = () => {
           {completedTasks.length === 0 ? (
             <Card>
               <CardContent className="py-12">
-                <p className="text-center text-muted-foreground">No completed tasks yet. Start completing!</p>
+                <p className="text-center text-muted-foreground text-sm sm:text-base">No completed tasks yet. Start completing!</p>
               </CardContent>
             </Card>
           ) : (
             completedTasks.map((task) => (
               <Card key={task.id} className={task.submission?.status === 'approved' ? 'border-green-500' : 'border-blue-500'} data-testid={`completed-task-card-${task.id}`}>
                 <CardHeader>
-                  <div className="flex justify-between items-start">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                     <div className="flex-1">
-                      <CardTitle className="flex items-center gap-2">
-                        <CheckCircle className={`w-5 h-5 ${task.submission?.status === 'approved' ? 'text-green-500' : 'text-blue-500'}`} />
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                        <CheckCircle className={`w-4 h-4 sm:w-5 sm:h-5 ${task.submission?.status === 'approved' ? 'text-green-500' : 'text-blue-500'}`} />
                         {task.title}
                       </CardTitle>
-                      <CardDescription className="mt-2">{task.description}</CardDescription>
+                      <CardDescription className="mt-2 text-sm">{task.description}</CardDescription>
                     </div>
-                    <Badge variant={task.submission?.status === 'approved' ? 'success' : task.submission?.status === 'rejected' ? 'destructive' : 'default'}>
+                    <Badge variant={task.submission?.status === 'approved' ? 'success' : task.submission?.status === 'rejected' ? 'destructive' : 'default'} className="text-xs w-fit">
                       {task.submission?.status === 'approved' ? 'Approved' : task.submission?.status === 'rejected' ? 'Rejected' : 'Under Review'}
                     </Badge>
                   </div>
                 </CardHeader>
                 {task.submission?.feedback && (
                   <CardContent>
-                    <div className="bg-muted p-4 rounded">
-                      <p className="text-sm font-semibold mb-2">Admin Feedback:</p>
-                      <p className="text-sm text-muted-foreground">{task.submission.feedback}</p>
+                    <div className="bg-muted p-3 sm:p-4 rounded">
+                      <p className="text-xs sm:text-sm font-semibold mb-2">Admin Feedback:</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{task.submission.feedback}</p>
                     </div>
                   </CardContent>
                 )}
@@ -221,19 +216,20 @@ export const MyTasksPage = () => {
       </Tabs>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md" data-testid="submit-task-dialog">
+        <DialogContent className="max-w-md mx-4 sm:mx-auto" data-testid="submit-task-dialog">
           <DialogHeader>
             <DialogTitle>Complete Task</DialogTitle>
             <DialogDescription>
               Are you sure you want to mark "{selectedTask?.title}" as complete?
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex gap-3">
+          <DialogFooter className="flex-col sm:flex-row gap-3">
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => setIsDialogOpen(false)}
               disabled={submitting}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
@@ -241,6 +237,7 @@ export const MyTasksPage = () => {
               onClick={confirmCompletion} 
               data-testid="submit-task-final-button"
               disabled={submitting}
+              className="w-full sm:w-auto"
             >
               <CheckCircle className="w-4 h-4 mr-2" />
               {submitting ? 'Completing...' : 'Yes, Mark Complete'}

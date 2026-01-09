@@ -64,16 +64,16 @@ export const StudentsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold" data-testid="students-page-title">Students Management</h2>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h2 className="text-2xl sm:text-3xl font-bold" data-testid="students-page-title">Students Management</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button data-testid="add-student-dialog-trigger">
+            <Button data-testid="add-student-dialog-trigger" className="w-full sm:w-auto">
               <UserPlus className="w-4 h-4 mr-2" />
               Add Student
             </Button>
           </DialogTrigger>
-          <DialogContent data-testid="add-student-dialog">
+          <DialogContent data-testid="add-student-dialog" className="max-w-md mx-4 sm:mx-auto">
             <DialogHeader>
               <DialogTitle>Add New Student</DialogTitle>
             </DialogHeader>
@@ -128,9 +128,9 @@ export const StudentsPage = () => {
                   />
                 </div>
               </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                <Button type="submit" data-testid="submit-add-student-button">Add Student</Button>
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto">Cancel</Button>
+                <Button type="submit" data-testid="submit-add-student-button" className="w-full sm:w-auto">Add Student</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -139,34 +139,59 @@ export const StudentsPage = () => {
 
       <Card data-testid="students-list-card">
         <CardHeader>
-          <CardTitle>All Students ({students.length})</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">All Students ({students.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {students.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No students yet. Add your first student!</p>
+            <p className="text-center text-muted-foreground py-8 text-sm sm:text-base">No students yet. Add your first student!</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {students.map((student) => (
+                      <TableRow key={student.id} data-testid={`student-row-${student.id}`}>
+                        <TableCell className="font-medium">{student.name}</TableCell>
+                        <TableCell>{student.email}</TableCell>
+                        <TableCell>{new Date(student.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Badge variant="success" data-testid={`student-status-${student.id}`}>Active</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4">
                 {students.map((student) => (
-                  <TableRow key={student.id} data-testid={`student-row-${student.id}`}>
-                    <TableCell className="font-medium">{student.name}</TableCell>
-                    <TableCell>{student.email}</TableCell>
-                    <TableCell>{new Date(student.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <Badge variant="success" data-testid={`student-status-${student.id}`}>Active</Badge>
-                    </TableCell>
-                  </TableRow>
+                  <Card key={student.id} data-testid={`student-card-${student.id}`} className="border-l-4 border-l-primary">
+                    <CardContent className="p-4 space-y-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-base">{student.name}</h3>
+                          <p className="text-sm text-muted-foreground mt-1">{student.email}</p>
+                        </div>
+                        <Badge variant="success" data-testid={`student-status-mobile-${student.id}`}>Active</Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground pt-2 border-t">
+                        Joined: {new Date(student.created_at).toLocaleDateString()}
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

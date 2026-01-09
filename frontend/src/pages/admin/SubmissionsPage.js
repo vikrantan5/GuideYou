@@ -106,80 +106,115 @@ export const SubmissionsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold" data-testid="submissions-page-title">Submissions Review</h2>
-        <Badge variant="warning" className="text-lg px-4 py-2" data-testid="pending-submissions-badge">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h2 className="text-2xl sm:text-3xl font-bold" data-testid="submissions-page-title">Submissions Review</h2>
+        <Badge variant="warning" className="text-base sm:text-lg px-3 sm:px-4 py-2 w-fit" data-testid="pending-submissions-badge">
           {pendingCount} Pending
         </Badge>
       </div>
 
       <Card data-testid="submissions-list-card">
         <CardHeader>
-          <CardTitle>All Submissions ({submissions.length})</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">All Submissions ({submissions.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {submissions.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No submissions yet.</p>
+            <p className="text-center text-muted-foreground py-8 text-sm sm:text-base">No submissions yet.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Task</TableHead>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Submitted</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Task</TableHead>
+                      <TableHead>Student</TableHead>
+                      <TableHead>Submitted</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {submissions.map((submission) => (
+                      <TableRow key={submission.id} data-testid={`submission-row-${submission.id}`}>
+                        <TableCell className="font-medium">{submission.task_id}</TableCell>
+                        <TableCell>{submission.student_id}</TableCell>
+                        <TableCell>{new Date(submission.submitted_at).toLocaleString()}</TableCell>
+                        <TableCell>{getStatusBadge(submission.status)}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleReview(submission)}
+                            data-testid={`review-submission-${submission.id}`}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Review
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4">
                 {submissions.map((submission) => (
-                  <TableRow key={submission.id} data-testid={`submission-row-${submission.id}`}>
-                    <TableCell className="font-medium">{submission.task_id}</TableCell>
-                    <TableCell>{submission.student_id}</TableCell>
-                    <TableCell>{new Date(submission.submitted_at).toLocaleString()}</TableCell>
-                    <TableCell>{getStatusBadge(submission.status)}</TableCell>
-                    <TableCell>
+                  <Card key={submission.id} data-testid={`submission-card-${submission.id}`} className="border-l-4 border-l-primary">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 space-y-1">
+                          <h3 className="font-semibold text-base">Task: {submission.task_id}</h3>
+                          <p className="text-sm text-muted-foreground">Student: {submission.student_id}</p>
+                        </div>
+                        {getStatusBadge(submission.status)}
+                      </div>
+                      <div className="text-xs text-muted-foreground pt-2 border-t">
+                        Submitted: {new Date(submission.submitted_at).toLocaleString()}
+                      </div>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={() => handleReview(submission)}
-                        data-testid={`review-submission-${submission.id}`}
+                        data-testid={`review-submission-mobile-${submission.id}`}
+                        className="w-full"
                       >
                         <Eye className="w-4 h-4 mr-2" />
-                        Review
+                        Review Submission
                       </Button>
-                    </TableCell>
-                  </TableRow>
+                    </CardContent>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl" data-testid="review-submission-dialog">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto" data-testid="review-submission-dialog">
           <DialogHeader>
             <DialogTitle>Review Submission</DialogTitle>
           </DialogHeader>
           {selectedSubmission && (
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold mb-2">Submission Content:</h3>
+                <h3 className="font-semibold mb-2 text-sm sm:text-base">Submission Content:</h3>
                 {selectedSubmission.file_url ? (
                   <div className="border rounded p-4">
-                    <a href={selectedSubmission.file_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    <a href={selectedSubmission.file_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm sm:text-base">
                       View Submitted File
                     </a>
                   </div>
                 ) : (
                   <div className="border rounded p-4 bg-muted">
-                    <p>{selectedSubmission.content || 'No content available'}</p>
+                    <p className="text-sm sm:text-base">{selectedSubmission.content || 'No content available'}</p>
                   </div>
                 )}
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Feedback:</h3>
+                <h3 className="font-semibold mb-2 text-sm sm:text-base">Feedback:</h3>
                 <Textarea
                   placeholder="Provide feedback to the student..."
                   value={feedback}
@@ -188,13 +223,13 @@ export const SubmissionsPage = () => {
                   data-testid="feedback-textarea"
                 />
               </div>
-              <div className="flex gap-3 justify-end">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                <Button variant="destructive" onClick={handleReject} data-testid="reject-submission-button">
+              <div className="flex flex-col sm:flex-row gap-3 justify-end">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto">Cancel</Button>
+                <Button variant="destructive" onClick={handleReject} data-testid="reject-submission-button" className="w-full sm:w-auto">
                   <XCircle className="w-4 h-4 mr-2" />
                   Reject
                 </Button>
-                <Button variant="default" onClick={handleApprove} data-testid="approve-submission-button">
+                <Button variant="default" onClick={handleApprove} data-testid="approve-submission-button" className="w-full sm:w-auto">
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Approve
                 </Button>

@@ -93,11 +93,7 @@ export const AdminChatsPage = () => {
     if (chatSession && message.chat_id === chatSession.id) {
       setMessages(prev => [...prev, message]);
     } else {
-      // Increment unread count for other chats
-      const studentId = students.find(s => {
-        // Find which student this message belongs to
-        return true; // Simplified for now
-      })?.id;
+      const studentId = students.find(s => true)?.id;
       if (studentId) {
         setUnreadCounts(prev => ({ ...prev, [studentId]: (prev[studentId] || 0) + 1 }));
       }
@@ -170,54 +166,54 @@ export const AdminChatsPage = () => {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-3xl font-bold flex items-center gap-2" data-testid="admin-chats-page-title">
-          <MessageCircle className="w-8 h-8 text-primary" />
+        <h2 className="text-2xl sm:text-3xl font-bold flex items-center gap-2" data-testid="admin-chats-page-title">
+          <MessageCircle className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
           Student Chats
         </h2>
-        <p className="text-muted-foreground mt-1">Connect with students in real-time</p>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Connect with students in real-time</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" style={{ height: '700px' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" style={{ height: '600px' }}>
         {/* Students List */}
         <Card className="lg:col-span-1 overflow-hidden">
-          <div className="p-4 border-b bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+          <div className="p-3 sm:p-4 border-b bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search students..."
-                className="pl-10"
+                className="pl-10 text-sm"
                 data-testid="search-students-input"
               />
             </div>
           </div>
-          <div className="overflow-y-auto" style={{ height: 'calc(100% - 80px)' }}>
+          <div className="overflow-y-auto" style={{ height: 'calc(100% - 64px)' }}>
             {filteredStudents.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
                 <User className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No students found</p>
+                <p className="text-sm">No students found</p>
               </div>
             ) : (
               filteredStudents.map((student) => (
                 <div
                   key={student.id}
                   onClick={() => handleStudentSelect(student)}
-                  className={`p-4 border-b cursor-pointer transition-all hover:bg-muted/50 ${
+                  className={`p-3 sm:p-4 border-b cursor-pointer transition-all hover:bg-muted/50 ${
                     selectedStudent?.id === student.id ? 'bg-primary/10 border-l-4 border-l-primary' : ''
                   }`}
                   data-testid={`student-chat-item-${student.id}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-lg flex-shrink-0">
-                      <User className="w-6 h-6 text-white" />
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-lg flex-shrink-0">
+                      <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold truncate">{student.name}</h3>
-                      <p className="text-sm text-muted-foreground truncate">{student.email}</p>
+                      <h3 className="font-semibold truncate text-sm sm:text-base">{student.name}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{student.email}</p>
                     </div>
                     {unreadCounts[student.id] > 0 && (
-                      <Badge variant="destructive" className="rounded-full h-6 w-6 p-0 flex items-center justify-center">
+                      <Badge variant="destructive" className="rounded-full h-5 w-5 sm:h-6 sm:w-6 p-0 flex items-center justify-center text-xs">
                         {unreadCounts[student.id]}
                       </Badge>
                     )}
@@ -231,26 +227,26 @@ export const AdminChatsPage = () => {
         {/* Chat Area */}
         <Card className="lg:col-span-2 overflow-hidden">
           {!selectedStudent ? (
-            <CardContent className="h-full flex flex-col items-center justify-center text-center p-8">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6 shadow-xl">
-                <MessageCircle className="w-12 h-12 text-white" />
+            <CardContent className="h-full flex flex-col items-center justify-center text-center p-4 sm:p-8">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4 sm:mb-6 shadow-xl">
+                <MessageCircle className="w-8 h-8 sm:w-12 sm:h-12 text-white" />
               </div>
-              <h3 className="text-2xl font-bold mb-2">Select a Student</h3>
-              <p className="text-muted-foreground max-w-md">Choose a student from the list to start chatting and providing support</p>
+              <h3 className="text-xl sm:text-2xl font-bold mb-2">Select a Student</h3>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-md">Choose a student from the list to start chatting and providing support</p>
             </CardContent>
           ) : (
             <div className="h-full flex flex-col">
               {/* Chat Header */}
-              <div className="p-4 border-b bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-lg">
-                    <User className="w-5 h-5 text-white" />
+              <div className="p-3 sm:p-4 border-b bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-lg">
+                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{selectedStudent.name}</h3>
-                    <p className="text-xs text-muted-foreground">{selectedStudent.email}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base truncate">{selectedStudent.name}</h3>
+                    <p className="text-xs text-muted-foreground truncate">{selectedStudent.email}</p>
                   </div>
-                  <Badge variant="outline" className="px-3 py-1">
+                  <Badge variant="outline" className="px-2 py-1 text-xs sm:text-sm">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                     Active
                   </Badge>
@@ -258,14 +254,14 @@ export const AdminChatsPage = () => {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-br from-gray-50/50 to-purple-50/30 dark:from-gray-900/50 dark:to-purple-900/20" data-testid="admin-messages-container">
+              <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 bg-gradient-to-br from-gray-50/50 to-purple-50/30 dark:from-gray-900/50 dark:to-purple-900/20" data-testid="admin-messages-container">
                 {messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4">
-                      <Sparkles className="w-8 h-8 text-white" />
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4">
+                      <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">Start Conversation</h3>
-                    <p className="text-muted-foreground">Send the first message to {selectedStudent.name}</p>
+                    <h3 className="text-base sm:text-lg font-semibold mb-2">Start Conversation</h3>
+                    <p className="text-sm text-muted-foreground">Send the first message to {selectedStudent.name}</p>
                   </div>
                 ) : (
                   messages.map((message, index) => {
@@ -274,19 +270,19 @@ export const AdminChatsPage = () => {
                     return (
                       <div
                         key={message.id || index}
-                        className={`flex items-end gap-3 ${isOwn ? 'flex-row-reverse' : 'flex-row'} animate-slide-in`}
+                        className={`flex items-end gap-2 sm:gap-3 ${isOwn ? 'flex-row-reverse' : 'flex-row'} animate-slide-in`}
                         data-testid={`admin-message-${index}`}
                       >
-                        <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg ${
+                        <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center shadow-lg ${
                           isOwn 
                             ? 'bg-gradient-to-br from-orange-400 to-red-500' 
                             : 'bg-gradient-to-br from-blue-400 to-purple-500'
                         }`}>
-                          {isOwn ? <Shield className="w-5 h-5 text-white" /> : <User className="w-5 h-5 text-white" />}
+                          {isOwn ? <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-white" /> : <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />}
                         </div>
 
-                        <div className={`flex flex-col max-w-md ${isOwn ? 'items-end' : 'items-start'}`}>
-                          <div className={`px-5 py-3 rounded-3xl shadow-lg transform transition-all hover:scale-105 ${
+                        <div className={`flex flex-col max-w-[75%] sm:max-w-md ${isOwn ? 'items-end' : 'items-start'}`}>
+                          <div className={`px-3 sm:px-5 py-2 sm:py-3 rounded-3xl shadow-lg transform transition-all hover:scale-105 ${
                             isOwn 
                               ? 'bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-br-sm' 
                               : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-bl-sm border'
@@ -294,9 +290,9 @@ export const AdminChatsPage = () => {
                             {isOwn && (
                               <p className="text-xs font-semibold mb-1 text-orange-100">You</p>
                             )}
-                            <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
+                            <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
                           </div>
-                          <span className={`text-xs mt-1 px-2 text-gray-600 dark:text-gray-400`}>
+                          <span className="text-xs mt-1 px-2 text-gray-600 dark:text-gray-400">
                             {formatTime(message.created_at)}
                           </span>
                         </div>
@@ -306,11 +302,11 @@ export const AdminChatsPage = () => {
                 )}
 
                 {isTyping && (
-                  <div className="flex items-end gap-3 animate-fade-in">
-                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-lg">
-                      <User className="w-5 h-5 text-white" />
+                  <div className="flex items-end gap-2 sm:gap-3 animate-fade-in">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-lg">
+                      <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
-                    <div className="px-5 py-3 rounded-3xl rounded-bl-sm bg-white dark:bg-gray-800 border shadow-lg">
+                    <div className="px-3 sm:px-5 py-2 sm:py-3 rounded-3xl rounded-bl-sm bg-white dark:bg-gray-800 border shadow-lg">
                       <div className="flex space-x-2">
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
@@ -324,8 +320,8 @@ export const AdminChatsPage = () => {
               </div>
 
               {/* Input Area */}
-              <div className="border-t bg-white dark:bg-gray-900 p-4">
-                <div className="flex items-center gap-3">
+              <div className="border-t bg-white dark:bg-gray-900 p-3 sm:p-4">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <div className="flex-1 relative">
                     <Input
                       value={newMessage}
@@ -335,17 +331,17 @@ export const AdminChatsPage = () => {
                       }}
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                       placeholder="Type your message..."
-                      className="rounded-full pr-4 pl-6 py-6 text-base shadow-sm"
+                      className="rounded-full pr-4 pl-4 sm:pl-6 py-5 sm:py-6 text-sm sm:text-base shadow-sm"
                       data-testid="admin-message-input"
                     />
                   </div>
                   <Button
                     onClick={handleSendMessage}
                     disabled={!newMessage.trim()}
-                    className="rounded-full h-12 w-12 p-0 bg-gradient-to-br from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-lg transform transition-all hover:scale-110"
+                    className="rounded-full h-10 w-10 sm:h-12 sm:w-12 p-0 bg-gradient-to-br from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-lg transform transition-all hover:scale-110"
                     data-testid="admin-send-message-button"
                   >
-                    <Send className="w-5 h-5" />
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Button>
                 </div>
               </div>
