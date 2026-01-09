@@ -1,26 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
-import { Textarea } from '../../components/ui/textarea';
-import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../components/ui/dialog';
 import { Badge } from '../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { CheckCircle, Clock, XCircle, Upload, Send } from 'lucide-react';
+import { CheckCircle, Clock, XCircle } from 'lucide-react';
 import * as api from '../../utils/api';
 import { toast } from 'sonner';
 import axios from 'axios';
+
+// Utility function to safely extract error messages
+const getErrorMessage = (error) => {
+  try {
+    if (!error) return 'An error occurred';
+    
+    // Check for response data
+    if (error.response?.data) {
+      const data = error.response.data;
+      
+      // Handle FastAPI validation errors (array)
+      if (Array.isArray(data.detail)) {
+        return data.detail
+          .map(err => {
+            if (typeof err === 'string') return err;
+            if (err.msg) return String(err.msg);
+            return 'Validation error';
+          })
+          .join('; ');
+      }
+      
+      // Handle simple string error
+      if (typeof data.detail === 'string') {
+        return data.detail;
+      }
+      
+      // Handle message field
+      if (typeof data.message === 'string') {
+        return data.message;
+      }
+    }
+    
+    // Fallback to error message
+    if (typeof error.message === 'string') {
+      return error.message;
+    }
+    
+    return 'An error occurred';
+  } catch (e) {
+    console.error('Error parsing error message:', e);
+    return 'An error occurred';
+  }
+};
 
 export const MyTasksPage = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [submissionData, setSubmissionData] = useState({
-    content: '',
-    file_url: ''
-  });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     loadTasks();
@@ -35,36 +72,36 @@ export const MyTasksPage = () => {
       setTasks(response.data);
     } catch (error) {
       console.error('Failed to load tasks:', error);
-      toast.error('Failed to load tasks');
+      toast.error(getErrorMessage(error) || 'Failed to load tasks');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmitTask = (task) => {
+  const handleCompleteTask = (task) => {
     setSelectedTask(task);
-    setSubmissionData({ content: '', file_url: '' });
     setIsDialogOpen(true);
   };
 
-  const handleSubmission = async (e) => {
-    e.preventDefault();
+  const confirmCompletion = async () => {
     if (!selectedTask) return;
 
     try {
+      setSubmitting(true);
       const token = localStorage.getItem('token');
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       await api.createSubmission({
-        task_id: selectedTask.id,
-        content: submissionData.content,
-        file_url: submissionData.file_url
+        task_id: selectedTask.id
       });
-      toast.success('Task submitted successfully!');
+      toast.success('Task marked as complete!');
       setIsDialogOpen(false);
-      loadTasks();
+      setSelectedTask(null);
+      await loadTasks();
     } catch (error) {
-      console.error('Failed to submit task:', error);
-      toast.error(error.response?.data?.detail || 'Failed to submit task');
+      console.error('Failed to complete task:', error);
+      toast.error(getErrorMessage(error) || 'Failed to complete task');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -134,9 +171,9 @@ export const MyTasksPage = () => {
                         <strong>Deadline:</strong> {new Date(task.deadline).toLocaleString()}
                       </p>
                     </div>
-                    <Button onClick={() => handleSubmitTask(task)} data-testid={`submit-task-button-${task.id}`}>
-                      <Send className="w-4 h-4 mr-2" />
-                      Submit
+                    <Button onClick={() => handleCompleteTask(task)} data-testid={`submit-task-button-${task.id}`}>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Mark as Complete
                     </Button>
                   </div>
                 </CardContent>
@@ -149,7 +186,7 @@ export const MyTasksPage = () => {
           {completedTasks.length === 0 ? (
             <Card>
               <CardContent className="py-12">
-                <p className="text-center text-muted-foreground">No completed tasks yet. Start submitting!</p>
+                <p className="text-center text-muted-foreground">No completed tasks yet. Start completing!</p>
               </CardContent>
             </Card>
           ) : (
@@ -182,44 +219,31 @@ export const MyTasksPage = () => {
       </Tabs>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl" data-testid="submit-task-dialog">
+        <DialogContent className="max-w-md" data-testid="submit-task-dialog">
           <DialogHeader>
-            <DialogTitle>Submit: {selectedTask?.title}</DialogTitle>
+            <DialogTitle>Complete Task</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to mark "{selectedTask?.title}" as complete?
+            </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmission} className="space-y-4">
-            <div>
-              <Label htmlFor="content">Your Answer / Description</Label>
-              <Textarea
-                id="content"
-                placeholder="Write your answer or describe your submission..."
-                value={submissionData.content}
-                onChange={(e) => setSubmissionData({ ...submissionData, content: e.target.value })}
-                rows={6}
-                required
-                data-testid="submission-content-input"
-              />
-            </div>
-            {selectedTask?.submission_type !== 'text' && (
-              <div>
-                <Label htmlFor="file_url">File URL (Image/Video/Link)</Label>
-                <Input
-                  id="file_url"
-                  type="url"
-                  placeholder="https://..."
-                  value={submissionData.file_url}
-                  onChange={(e) => setSubmissionData({ ...submissionData, file_url: e.target.value })}
-                  data-testid="submission-file-url-input"
-                />
-              </div>
-            )}
-            <div className="flex gap-3 justify-end">
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-              <Button type="submit" data-testid="submit-task-final-button">
-                <Upload className="w-4 h-4 mr-2" />
-                Submit Task
-              </Button>
-            </div>
-          </form>
+          <DialogFooter className="flex gap-3">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setIsDialogOpen(false)}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={confirmCompletion} 
+              data-testid="submit-task-final-button"
+              disabled={submitting}
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              {submitting ? 'Completing...' : 'Yes, Mark Complete'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
